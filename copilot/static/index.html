@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Copilot</title>
+<style>
+  :root {
+    --bg: #f7f8fa; --panel: #ffffff; --ink: #14181f; --muted: #5b6472; --line: #e3e6eb;
+    --navy: #1b2a4a; --navy-ink: #ffffff; --you: #1b2a4a; --them: #8a4b0f; --say-bg: #eef2f9;
+    --ok: #2f7d4f; --warn: #a33a2a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1218; --panel: #171b23; --ink: #e8ebf0; --muted: #98a1ae; --line: #262c37;
+      --navy: #3a5a9c; --you: #9db8ec; --them: #e2a868; --say-bg: #1d2533; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0 8px 0 0; font-weight: 600; }
+  .meter { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .bar { width: 70px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .12s linear; }
+  .chip { font-size: 13px; color: var(--muted); }
+  .chip.bad { color: var(--warn); }
+  .spacer { flex: 1; }
+  button { font: inherit; font-size: 14px; border: 1px solid var(--navy); background: var(--navy); color: var(--navy-ink); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  button.plain { background: transparent; color: var(--ink); border-color: var(--line); }
+  label.toggle { font-size: 14px; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  main { flex: 1; display: grid; grid-template-columns: minmax(280px, 2fr) 3fr; min-height: 0; }
+  section { display: flex; flex-direction: column; min-height: 0; }
+  section + section { border-left: 1px solid var(--line); }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; padding: 12px 18px 8px; font-weight: 600; }
+  #transcript { flex: 1; overflow-y: auto; padding: 0 18px 18px; }
+  .ln { margin: 0 0 8px; }
+  .ln b { font-weight: 600; margin-right: 6px; font-size: 13px; }
+  .ln.you b { color: var(--you); } .ln.them b { color: var(--them); }
+  .ln time { color: var(--muted); font-size: 12px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  #cards { flex: 1; overflow-y: auto; padding: 0 18px 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .card.latest { border-color: var(--navy); }
+  .card .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; margin-bottom: 6px; }
+  .card .meta .trig { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .say { background: var(--say-bg); border-radius: 6px; padding: 10px 12px; font-size: 18px; line-height: 1.45; cursor: copy; }
+  .card ul { margin: 8px 0 0; padding-left: 20px; }
+  .card li { margin-bottom: 3px; }
+  .ask { margin-top: 8px; font-style: italic; }
+  .sources { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .sources a { color: var(--muted); }
+  .status { font-size: 13px; color: var(--muted); }
+  .card.pass { padding: 6px 14px; background: transparent; }
+  .card.pass .body { font-size: 13px; color: var(--muted); }
+  .card.err .body { color: var(--warn); font-size: 13px; }
+  form#askf { display: flex; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--line); background: var(--panel); }
+  form#askf input { flex: 1; font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  #settings { display: none; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--panel); gap: 12px; flex-direction: column; }
+  #settings.open { display: flex; }
+  #settings label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  #settings input, #settings textarea { width: 100%; font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  #settings textarea { min-height: 80px; resize: vertical; }
+  #saved { display: none; padding: 8px 18px; font-size: 14px; background: var(--say-bg); border-bottom: 1px solid var(--line); }
+  #saved.show { display: block; }
+  #saved a { color: var(--ink); cursor: pointer; text-decoration: underline; }
+  .empty { color: var(--muted); font-size: 14px; padding: 4px 0; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; grid-template-rows: 1fr 1.4fr; } section + section { border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Meeting Copilot</h1>
+  <div class="meter">You <span class="bar"><i id="lvl-you"></i></span></div>
+  <div class="meter">Them <span class="bar"><i id="lvl-them"></i></span></div>
+  <span class="chip" id="libchip">Library: none</span>
+  <span class="chip" id="keychip"></span>
+  <span class="spacer"></span>
+  <label class="toggle" title="Suggest a reply when the other side finishes speaking"><input type="checkbox" id="auto"> Suggest after they speak</label>
+  <label class="toggle" title="Suggest corrections, facts or a next question when you finish speaking"><input type="checkbox" id="autoyou"> Suggest after I speak</label>
+  <button class="plain" id="pause">Pause</button>
+  <button class="plain" id="gear">Settings</button>
+  <button id="suggest" title="Shortcut: Ctrl+Space">Suggest now</button>
+  <button class="plain" id="end" title="Save the transcript and start a fresh session">End call</button>
+</header>
+<div id="settings">
+  <div><label for="libpath">Knowledge library folder</label><input id="libpath" placeholder="/Users/you/Documents/Library"></div>
+  <div><label for="context">Meeting context (who you are, who you are meeting, what you want from the call)</label><textarea id="context"></textarea></div>
+  <div><button id="save">Save</button> <button class="plain" id="openfolder">Open transcripts folder</button> <span class="status" id="logpath"></span></div>
+</div>
+<div id="saved"></div>
+<main>
+  <section>
+    <h2>Transcript</h2>
+    <div id="transcript"><p class="empty">Waiting for speech. Lines from your microphone show as You, and lines from the call show as Them.</p></div>
+  </section>
+  <section>
+    <h2>Suggested replies</h2>
+    <div id="cards"><p class="empty">Suggestions appear here when the other side says something worth answering. Click a suggestion to copy it.</p></div>
+    <form id="askf"><input id="askq" placeholder="Ask Claude privately, for example: what is our day rate for workshops?" autocomplete="off"><button>Ask</button></form>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let ws, cards = {}, state = {};
+
+function connect() {
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onmessage = e => handle(JSON.parse(e.data));
+  ws.onclose = () => setTimeout(connect, 1000);
+}
+const send = o => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
+
+function handle(m) {
+  switch (m.type) {
+    case "status": return applyStatus(m);
+    case "history": m.lines.forEach(addLine); m.cards.forEach(c => { startCard(c); cards[c.id].text = c.text; renderCard(c.id); }); return;
+    case "levels": for (const k of ["you", "them"]) $("#lvl-" + k).style.width = Math.max(0, Math.min(100, (m[k] + 60) * 2)) + "%"; return;
+    case "line": return addLine(m);
+    case "card_start": return startCard(m);
+    case "card_reset": cards[m.id].text = ""; return renderCard(m.id);
+    case "card_delta": cards[m.id].text += m.text; cards[m.id].status = ""; return renderCard(m.id);
+    case "card_status": cards[m.id].status = m.status; return renderCard(m.id);
+    case "card_done": cards[m.id].done = true; cards[m.id].sources = m.sources; return renderCard(m.id);
+    case "card_cancel": cards[m.id].el.remove(); delete cards[m.id]; return;
+    case "card_error": cards[m.id].error = m.error; return renderCard(m.id);
+    case "reset": return resetCall(m.saved);
+  }
+}
+
+function applyStatus(m) {
+  state = m;
+  const lib = m.library;
+  $("#libchip").textContent = lib.folder ? `Library: ${lib.files} files` : "Library: none set";
+  $("#libchip").title = lib.folder;
+  const kc = $("#keychip");
+  if (!m.claude) { kc.textContent = "Claude Code is not installed"; kc.className = "chip bad"; }
+  else if (m.capture_error) { kc.textContent = "Audio capture stopped: check Screen Recording permission"; kc.className = "chip bad"; kc.title = m.capture_error; }
+  else { kc.textContent = `Claude ${m.model} (subscription), effort ${m.effort}`; kc.className = "chip"; }
+  $("#auto").checked = m.settings.auto;
+  $("#autoyou").checked = m.settings.auto_you;
+  $("#pause").textContent = m.paused ? "Resume" : "Pause";
+  if (document.activeElement !== $("#libpath")) $("#libpath").value = m.settings.library || "";
+  if (document.activeElement !== $("#context")) $("#context").value = m.settings.context || "";
+  $("#logpath").textContent = "Transcripts are saved in " + m.folder;
+}
+
+const TRANSCRIPT_EMPTY = $("#transcript").innerHTML, CARDS_EMPTY = $("#cards").innerHTML;
+function resetCall(saved) {
+  Object.values(cards).forEach(c => c.el.remove()); cards = {};
+  $("#transcript").innerHTML = TRANSCRIPT_EMPTY; $("#cards").innerHTML = CARDS_EMPTY;
+  const b = $("#saved");
+  b.innerHTML = saved ? `Transcript saved to ${esc(saved)}. <a id="openSaved">Open it</a>` : "Nothing was said, so there was no transcript to save.";
+  b.classList.add("show");
+  $("#openSaved")?.addEventListener("click", () => send({ cmd: "open_folder", path: saved }));
+  setTimeout(() => b.classList.remove("show"), 15000);
+}
+
+function addLine(l) {
+  $("#saved").classList.remove("show");
+  const box = $("#transcript"), atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  box.querySelector(".empty")?.remove();
+  const p = document.createElement("p");
+  p.className = "ln " + l.source;
+  p.innerHTML = `<time>${l.t}</time><b>${l.source === "you" ? "You" : "Them"}</b>${esc(l.text)}`;
+  box.appendChild(p);
+  if (atBottom) box.scrollTop = box.scrollHeight;
+}
+
+function startCard(c) {
+  $("#cards .empty")?.remove();
+  const el = document.createElement("div");
+  el.className = "card";
+  $("#cards").prepend(el);
+  cards[c.id] = { ...c, el, text: "", status: "Thinking" };
+  renderCard(c.id);
+}
+
+function parse(text) {
+  const t = text.trim();
+  if (/^PASS/.test(t)) return { pass: t.replace(/^PASS:?\s*/, "") };
+  const say = (t.match(/SAY:\s*([\s\S]*?)(?=\n\s*POINTS:|\n\s*ASK:|$)/) || [])[1];
+  const pts = (t.match(/POINTS:\s*([\s\S]*?)(?=\n\s*ASK:|$)/) || [])[1];
+  const ask = (t.match(/ASK:\s*([\s\S]*)$/) || [])[1];
+  return { say, points: pts ? pts.split("\n").map(s => s.replace(/^\s*[-*•]\s*/, "").trim()).filter(Boolean) : [], ask };
+}
+
+function renderCard(id) {
+  const c = cards[id]; if (!c) return;
+  const label = { auto: "After", manual: "You asked for a suggestion", ask: "You asked" }[c.kind];
+  const p = parse(c.text);
+  let body = "";
+  if (c.error) body = `<div class="body">Could not get a suggestion. ${esc(c.error)}</div>`;
+  else if (p.pass !== undefined) body = `<div class="body">No reply needed${p.pass ? ": " + esc(p.pass) : ""}</div>`;
+  else {
+    if (p.say) body += `<div class="say" title="Click to copy">${esc(p.say.trim())}</div>`;
+    if (p.points.length) body += `<ul>${p.points.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    if (p.ask) body += `<div class="ask">Ask: ${esc(p.ask.trim())}</div>`;
+    if (!p.say && c.text && !p.points.length) body += `<div>${esc(c.text)}</div>`;
+    if (c.done && c.sources?.length) body += `<div class="sources">Sources: ${c.sources.map(s => s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>` : esc(s.label)).join(", ")}</div>`;
+  }
+  if (!c.done && !c.error && c.status) body += `<div class="status">${esc(c.status)}…</div>`;
+  c.el.className = "card" + (p.pass !== undefined && c.done ? " pass" : "") + (c.error ? " err" : "");
+  c.el.innerHTML = `<div class="meta"><span>${c.t}</span><span class="trig">${esc(label)}: ${esc(c.trigger || "")}</span></div>${body}`;
+  const say = c.el.querySelector(".say");
+  if (say) say.onclick = () => navigator.clipboard?.writeText(say.textContent);
+  document.querySelectorAll(".card.latest").forEach(e => e.classList.remove("latest"));
+  const first = [...document.querySelectorAll("#cards .card")].find(e => !e.classList.contains("pass"));
+  first?.classList.add("latest");
+}
+
+$("#suggest").onclick = () => send({ cmd: "suggest" });
+$("#auto").onchange = e => send({ cmd: "settings", auto: e.target.checked });
+$("#autoyou").onchange = e => send({ cmd: "settings", auto_you: e.target.checked });
+$("#pause").onclick = () => send({ cmd: "pause", paused: !state.paused });
+$("#end").onclick = () => send({ cmd: "end" });
+$("#openfolder").onclick = () => send({ cmd: "open_folder" });
+$("#gear").onclick = () => $("#settings").classList.toggle("open");
+$("#save").onclick = () => { send({ cmd: "settings", library: $("#libpath").value.trim(), context: $("#context").value }); $("#settings").classList.remove("open"); };
+$("#askf").onsubmit = e => { e.preventDefault(); const q = $("#askq").value.trim(); if (q) { send({ cmd: "ask", text: q }); $("#askq").value = ""; } };
+document.addEventListener("keydown", e => { if (e.ctrlKey && e.code === "Space") { e.preventDefault(); send({ cmd: "suggest" }); } });
+connect();
+</script>
+</body>
+</html>

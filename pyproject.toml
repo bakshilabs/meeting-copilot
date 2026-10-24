@@ -1,0 +1,5 @@
+[project]
+name = "meeting-copilot"
+version = "0.1.0"
+requires-python = ">=3.12,<3.14"
+dependencies = ["aiohttp", "numpy", "pypdf", "python-docx", "python-pptx"]
