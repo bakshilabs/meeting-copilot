@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 from urllib.parse import urlparse
 
-MODEL = os.environ.get("COPILOT_MODEL", "opus")
+MODEL = os.environ.get("COPILOT_MODEL", "opus")  # default; the Settings panel can switch to sonnet
 EFFORT = os.environ.get("COPILOT_EFFORT", "low")  # low keeps suggestions quick; raise for harder meetings
 CLAUDE = shutil.which("claude") or str(Path.home() / ".local" / "bin" / "claude")
 
@@ -53,7 +53,7 @@ class Brain:
     def __init__(self, library):
         self.library = library
 
-    async def suggest(self, context: str, transcript: str, passages: list, trigger: str, emit):
+    async def suggest(self, context: str, transcript: str, passages: list, trigger: str, emit, model: str = MODEL):
         """Streams a suggestion. emit(event_type, **data) sends updates to the UI."""
         hits = "\n\n".join(f"[{p['file']}]\n{p['text']}" for p in passages) or "None found."
         prompt = (f"<meeting_context>\n{context or 'Not given.'}\n</meeting_context>\n\n"
@@ -63,7 +63,7 @@ class Brain:
         cwd = self.library.mirror if self.library.mirror.is_dir() else Path.home()
         proc = await asyncio.create_subprocess_exec(
             CLAUDE, "-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
-            "--model", MODEL, "--effort", EFFORT, "--system-prompt", SYSTEM,
+            "--model", model, "--effort", EFFORT, "--system-prompt", SYSTEM,
             "--tools", TOOLS, "--allowedTools", TOOLS,
             "--no-session-persistence", "--strict-mcp-config", "--setting-sources", "",
             cwd=str(cwd), stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,

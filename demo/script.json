@@ -1,0 +1,84 @@
+{
+  "context": "I run DeltaOps Training, which delivers AI workshops for companies. I'm talking to Northgate Group's head of learning about training for their staff.",
+  "beats": [
+    {
+      "source": "them",
+      "text": "Thanks for making the time. We're planning AI training for about forty staff in the spring, mostly in our finance and HR teams.",
+      "card": "SAY: That's a really good fit for us. Our one-day AI at Work workshop has finance and HR versions of the hands-on labs, so each team practises on its own tasks. We recently ran something very similar for Harbour Housing, who trained 36 staff.\nPOINTS:\n- Morning covers how AI assistants work, prompting, and drafting and summarising documents. Afternoon covers spreadsheets and data, safe use and company policy, and a lab on each team's tasks [workshop-outline.md]\n- Every participant leaves with a prompt library for their role [workshop-outline.md]\n- Harbour Housing ran 36 staff across three workshop days in 2025. After three months, staff said they were saving 2.5 hours a week on average, and 92% rated the training good or excellent [case-study-harbour-housing.md]\n- Harbour Housing's finance team cut month-end report drafting from two days to one [case-study-harbour-housing.md]\nASK: Which tasks are taking up most of your finance and HR teams' time at the moment, so we can shape the labs around them?",
+      "sources": [
+        {
+          "kind": "library",
+          "label": "workshop-outline.md"
+        },
+        {
+          "kind": "library",
+          "label": "case-study-harbour-housing.md"
+        }
+      ]
+    },
+    {
+      "source": "them",
+      "text": "What would a full day cost for a group that size? And would you come up to our Leeds office?",
+      "card": "SAY: For forty people we'd run two full-day sessions of twenty, which would suit your finance and HR teams nicely. That comes to £6,200 in total, or £3,100 a day. And yes, we're happy to come to Leeds. Travel outside London is charged at cost, so I'll add that to the quote once we have dates.\nPOINTS:\n- A full day for 13 to 20 people is £3,100, and groups over 20 are split into separate sessions [pricing.md]\n- The 10% discount only applies when three or more sessions are booked together. Three smaller sessions would still cost more, at £8,370 after the discount, than two sessions at £6,200 [pricing.md]\n- There are finance and HR versions of the hands-on labs, and every participant leaves with a prompt library for their role [workshop-outline.md]\n- Harbour Housing trained 36 staff over three days. Staff reported saving 2.5 hours a week, and their finance team cut month-end report drafting from two days to one [case-study-harbour-housing.md]\nASK: Would you like to split the sessions by team, one for finance and one for HR, so the labs can use their own day-to-day tasks?",
+      "sources": [
+        {
+          "kind": "library",
+          "label": "pricing.md"
+        },
+        {
+          "kind": "library",
+          "label": "workshop-outline.md"
+        },
+        {
+          "kind": "library",
+          "label": "case-study-harbour-housing.md"
+        }
+      ]
+    },
+    {
+      "source": "you",
+      "text": "For a group of forty, we'd run two days at two thousand pounds each.",
+      "card": "SAY: Let me correct that figure. For forty people we'd run two full days of twenty, at £3,100 each, so £6,200 in total. Travel to Leeds is charged at cost on top of that.\nPOINTS:\n- Our price for a full day with 13 to 20 people is £3,100, not £2,000. Groups larger than 20 are split into separate sessions. [pricing.md]\n- Another option is four smaller sessions of up to 12 people each. That's £2,400 a day, and booking three or more sessions gets 10% off, so £8,640 in total. [pricing.md]\n- Travel outside London is charged at cost, so yes to Leeds, but the travel cost comes on top. [pricing.md]\n- We have finance and HR versions of the afternoon lab. At Harbour Housing, the finance team cut month-end report drafting from two days to one. [workshop-outline.md, case-study-harbour-housing.md]\nASK: Would you prefer two larger sessions, or smaller groups split by team so finance and HR each get their own lab?",
+      "sources": [
+        {
+          "kind": "library",
+          "label": "case-study-harbour-housing.md"
+        },
+        {
+          "kind": "library",
+          "label": "pricing.md"
+        },
+        {
+          "kind": "library",
+          "label": "workshop-outline.md"
+        }
+      ]
+    },
+    {
+      "source": "ask",
+      "text": "What results did Harbour Housing get?",
+      "card": "SAY: A good comparison is Harbour Housing, a housing association. We trained 36 of their staff across three workshop days last year. Three months later, staff said they were saving two and a half hours a week on average, and their finance team cut month-end report drafting from two days to one.\nPOINTS:\n- 92% of Harbour Housing staff rated the training good or excellent [case-study-harbour-housing.md]\n- That group was close in size to Northgate's: 36 people over three days, and it included a finance team [case-study-harbour-housing.md]\n- Correct the price you gave: it isn't £2,000 a day. For 13 to 20 people a full day is £3,100, so forty staff split into two groups of 20 comes to £6,200 [pricing.md]\n- Leeds is outside London, so travel is extra and charged at cost [pricing.md]\nASK: Would you want separate sessions for finance and HR, so each group works on its own day-to-day tasks?",
+      "sources": [
+        {
+          "kind": "library",
+          "label": "case-study-harbour-housing.md"
+        },
+        {
+          "kind": "library",
+          "label": "pricing.md"
+        }
+      ]
+    },
+    {
+      "source": "them",
+      "text": "That sounds really useful. Could you send a proposal over by Friday?",
+      "card": "SAY: Yes, I'll have a proposal over to you by Friday. One correction first: the price I gave was too low. A full day for up to twenty people is £3,100, so two days for forty would be £6,200. Travel to Leeds would be on top, at cost.\nPOINTS:\n- Full day for 13 to 20 people: £3,100. Full day for up to 12: £2,400 [pricing.md]\n- £2,000 a day isn't in the price list. Two groups of twenty means two days at £3,100 each [pricing.md]\n- Travel is only included inside London, so Leeds is charged at cost [pricing.md]\n- Harbour Housing trained 36 staff and saved 2.5 hours a week each. Their finance team halved month-end report drafting from two days to one [case-study-harbour-housing.md]\nASK: Would you like separate sessions for finance and HR, so each group works on its own day-to-day tasks?",
+      "sources": [
+        {
+          "kind": "library",
+          "label": "case-study-harbour-housing.md"
+        }
+      ]
+    }
+  ]
+}

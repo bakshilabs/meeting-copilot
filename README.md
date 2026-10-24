@@ -34,3 +34,13 @@ Give Meeting Copilot Screen Recording and Microphone permission in System Settin
 - Library formats: PDF, Word, PowerPoint, Markdown, text, CSV, HTML. The folder is re-indexed every 20 seconds.
 - Each session's transcript and suggestions are saved in ~/Documents/MeetingCopilot.
 - Only the transcript and library passages are sent to Claude. Audio stays on this Mac.
+
+## Demo video
+
+The `demo` folder plays a scripted call through the real interface and records it.
+
+1. `uv run python demo/generate.py` runs the call through the real suggestion pipeline and writes `demo/script.json`.
+2. `uv run python demo/voices.py` speaks each line with macOS voices.
+3. `THEME=light node demo/tour.mjs && uv run python demo/mux.py` renders the video to `demo/out` and adds the voices.
+
+The recorder comes from the web-demo-video skill. The client, case study and prices in `demo/library` are made up.

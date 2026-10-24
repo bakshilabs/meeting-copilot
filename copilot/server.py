@@ -28,7 +28,8 @@ def words(t: str) -> set[str]:
 class App:
     def __init__(self, args):
         saved = json.loads(SETTINGS.read_text()) if SETTINGS.exists() else {}
-        self.settings = {"library": args.library or saved.get("library", ""), "context": saved.get("context", ""), "auto": saved.get("auto", True), "auto_you": saved.get("auto_you", True)}
+        self.settings = {"library": args.library or saved.get("library", ""), "context": saved.get("context", ""), "auto": saved.get("auto", True), "auto_you": saved.get("auto_you", True),
+                         "theme": saved.get("theme", "system"), "model": saved.get("model", MODEL)}
         self.library = Library(self.settings["library"])
         self.brain = Brain(self.library)
         self.transcriber = Transcriber(str(MODELS / f"ggml-{args.whisper}.en.bin"))
@@ -106,7 +107,7 @@ class App:
 
     def status(self) -> dict:
         return {"type": "status", "library": self.library.summary(), "settings": self.settings, "paused": self.capture.paused,
-                "capture_error": self.capture.error, "claude": available(), "model": MODEL, "effort": EFFORT, "log": str(self.log or ""), "last_saved": self.last_saved, "folder": str(LOGS)}
+                "capture_error": self.capture.error, "claude": available(), "model": self.settings["model"], "effort": EFFORT, "log": str(self.log or ""), "last_saved": self.last_saved, "folder": str(LOGS)}
 
     # ---------- audio → transcript ----------
     def on_speech(self, source: str):
@@ -192,7 +193,7 @@ class App:
         recent = " ".join(l["text"] for l in self.lines[-2:])
         passages = [p for p in self.library.search(f"{query} {recent}", k=3) if p["score"] > 1.5]
         try:
-            sources = await self.brain.suggest(self.settings["context"], self.transcript_text(), passages, trigger, emit)
+            sources = await self.brain.suggest(self.settings["context"], self.transcript_text(), passages, trigger, emit, self.settings["model"])
         except asyncio.CancelledError:
             await self.send({"type": "card_cancel", "id": card["id"]})
             raise
@@ -221,9 +222,13 @@ class App:
                 q = d["text"].strip()
                 asyncio.create_task(self.make_card("ask", f"The user typed this privately (the other side cannot see it). Answer it so the user can use it in the meeting:\n{q}", q))
             elif cmd == "settings":
-                for k in ("context", "auto", "auto_you", "library"):
+                for k in ("context", "auto", "auto_you", "library", "theme", "model"):
                     if k in d:
                         self.settings[k] = d[k]
+                if self.settings["model"] not in ("opus", "sonnet"):
+                    self.settings["model"] = "opus"
+                if self.settings["theme"] not in ("system", "light", "dark"):
+                    self.settings["theme"] = "system"
                 if "library" in d:
                     self.library.__init__(d["library"])
                     await asyncio.to_thread(self.library.refresh)

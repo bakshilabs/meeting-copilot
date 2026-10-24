@@ -11,9 +11,11 @@
     --ok: #2f7d4f; --warn: #a33a2a;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0f1218; --panel: #171b23; --ink: #e8ebf0; --muted: #98a1ae; --line: #262c37;
+    :root:not([data-theme="light"]) { --bg: #0f1218; --panel: #171b23; --ink: #e8ebf0; --muted: #98a1ae; --line: #262c37;
       --navy: #3a5a9c; --you: #9db8ec; --them: #e2a868; --say-bg: #1d2533; }
   }
+  :root[data-theme="dark"] { --bg: #0f1218; --panel: #171b23; --ink: #e8ebf0; --muted: #98a1ae; --line: #262c37;
+    --navy: #3a5a9c; --you: #9db8ec; --them: #e2a868; --say-bg: #1d2533; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; display: flex; flex-direction: column; }
@@ -57,6 +59,8 @@
   #settings { display: none; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--panel); gap: 12px; flex-direction: column; }
   #settings.open { display: flex; }
   #settings label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  #settings .row { display: flex; gap: 24px; flex-wrap: wrap; }
+  #settings select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
   #settings input, #settings textarea { width: 100%; font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
   #settings textarea { min-height: 80px; resize: vertical; }
   #saved { display: none; padding: 8px 18px; font-size: 14px; background: var(--say-bg); border-bottom: 1px solid var(--line); }
@@ -84,6 +88,10 @@
 <div id="settings">
   <div><label for="libpath">Knowledge library folder</label><input id="libpath" placeholder="/Users/you/Documents/Library"></div>
   <div><label for="context">Meeting context (who you are, who you are meeting, what you want from the call)</label><textarea id="context"></textarea></div>
+  <div class="row">
+    <div><label for="theme">Colour</label><select id="theme"><option value="system">Match my computer</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+    <div><label for="model">Model</label><select id="model"><option value="opus">Opus (best answers)</option><option value="sonnet">Sonnet (faster, uses less of your plan)</option></select></div>
+  </div>
   <div><button id="save">Save</button> <button class="plain" id="openfolder">Open transcripts folder</button> <span class="status" id="logpath"></span></div>
 </div>
 <div id="saved"></div>
@@ -138,6 +146,9 @@ function applyStatus(m) {
   else { kc.textContent = `Claude ${m.model} (subscription), effort ${m.effort}`; kc.className = "chip"; }
   $("#auto").checked = m.settings.auto;
   $("#autoyou").checked = m.settings.auto_you;
+  $("#theme").value = m.settings.theme || "system";
+  $("#model").value = m.settings.model || "opus";
+  applyTheme(m.settings.theme);
   $("#pause").textContent = m.paused ? "Resume" : "Pause";
   if (document.activeElement !== $("#libpath")) $("#libpath").value = m.settings.library || "";
   if (document.activeElement !== $("#context")) $("#context").value = m.settings.context || "";
@@ -154,6 +165,13 @@ function resetCall(saved) {
   $("#openSaved")?.addEventListener("click", () => send({ cmd: "open_folder", path: saved }));
   setTimeout(() => b.classList.remove("show"), 15000);
 }
+
+function applyTheme(t) {
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem("theme", t || "system"); } catch {}
+}
+try { applyTheme(localStorage.getItem("theme")); } catch {}  // avoid a flash of the wrong colour before the server replies
 
 function addLine(l) {
   $("#saved").classList.remove("show");
@@ -212,13 +230,15 @@ $("#suggest").onclick = () => send({ cmd: "suggest" });
 $("#auto").onchange = e => send({ cmd: "settings", auto: e.target.checked });
 $("#autoyou").onchange = e => send({ cmd: "settings", auto_you: e.target.checked });
 $("#pause").onclick = () => send({ cmd: "pause", paused: !state.paused });
+$("#theme").onchange = e => { applyTheme(e.target.value); send({ cmd: "settings", theme: e.target.value }); };
+$("#model").onchange = e => send({ cmd: "settings", model: e.target.value });
 $("#end").onclick = () => send({ cmd: "end" });
 $("#openfolder").onclick = () => send({ cmd: "open_folder" });
 $("#gear").onclick = () => $("#settings").classList.toggle("open");
 $("#save").onclick = () => { send({ cmd: "settings", library: $("#libpath").value.trim(), context: $("#context").value }); $("#settings").classList.remove("open"); };
 $("#askf").onsubmit = e => { e.preventDefault(); const q = $("#askq").value.trim(); if (q) { send({ cmd: "ask", text: q }); $("#askq").value = ""; } };
 document.addEventListener("keydown", e => { if (e.ctrlKey && e.code === "Space") { e.preventDefault(); send({ cmd: "suggest" }); } });
-connect();
+if (!new URLSearchParams(location.search).has("demo")) connect();  // ?demo: driven by demo/tour.mjs
 </script>
 </body>
 </html>
